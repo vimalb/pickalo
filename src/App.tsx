@@ -1,8 +1,19 @@
-import React from 'react'
-import { observer, useLocalStore } from 'mobx-react-lite'
+import React from 'react';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import { Store } from './store';
 
+import { readDirectory } from './utils';
+
 import { useHotkeys } from 'react-hotkeys-hook';
+
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import Captions from "yet-another-react-lightbox/plugins/captions";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+import "yet-another-react-lightbox/plugins/captions.css";
+
 
 
 import { 
@@ -10,6 +21,7 @@ import {
   Button,
   Typography
 } from '@material-ui/core'
+import { readFile } from './utils';
 
 
 const App = observer(() => {
@@ -25,109 +37,129 @@ const App = observer(() => {
     setSortedJpegDirectory,
     sortedRawDirectory,
     setSortedRawDirectory,
+
+    unsortedPhotos,
+    sortedPhotos,
+    refreshSortedPhotos,
+    windowedImages,
+    
     
     selectedPhotoIndex,
-    setSelectedPhotoIndex,
-    selectedPhotoPrefix,
+    setSelectedPhotoIndex
   } = store;
 
-  const unsortedPhotos = store.unsortedPhotosAsync.get();
-  const sortedPhotos = store.sortedPhotosAsync.get();
-  const selectedPhotoUrl = store.selectedPhotoUrlAsync.get();
+  const currentUnsortedPhoto = unsortedPhotos[selectedPhotoIndex];
+  const currentSortedPhoto = currentUnsortedPhoto?.prefix ? sortedPhotos[currentUnsortedPhoto.prefix] : null;
 
-  useHotkeys('left,right', (event,handler) => {
+  useHotkeys('space,delete', async (event,handler) => {
     event.preventDefault();
-    if(handler.keys?.includes("left")) {
-      const newIndex = Math.max(selectedPhotoIndex - 1, 0);
-      setSelectedPhotoIndex(newIndex);
-    } else if(handler.keys?.includes("right")) {
-      const newIndex = Math.min(
-        selectedPhotoIndex + 1,
-        Math.max(unsortedPhotos.length - 1,0)
-      );
-      setSelectedPhotoIndex(newIndex);
+
+    if(handler.keys?.includes("space")) {
+      if(currentUnsortedPhoto?.jpeg && sortedJpegDirectory && !currentSortedPhoto?.jpeg) {
+        console.log(`Copying ${currentUnsortedPhoto.jpeg.relativePath}/${currentUnsortedPhoto.jpeg.name} to ${sortedJpegDirectory.name}/${currentUnsortedPhoto.jpeg.name}`);
+        const dstFile = await sortedJpegDirectory.getFileHandle(currentUnsortedPhoto.jpeg.name, {create: true});
+        const dstWriteFile = await (dstFile as any).createWritable();
+        await dstWriteFile.write(await readFile(currentUnsortedPhoto.jpeg));
+        await dstWriteFile.close();
+        refreshSortedPhotos();
+      }
+      if(currentUnsortedPhoto?.raw && sortedRawDirectory && !currentSortedPhoto?.raw) {
+        console.log(`Copying ${currentUnsortedPhoto.raw.relativePath}/${currentUnsortedPhoto.raw.name} to ${sortedRawDirectory.name}/${currentUnsortedPhoto.raw.name}`);
+        const dstFile = await sortedRawDirectory.getFileHandle(currentUnsortedPhoto.raw.name, {create: true});
+        const dstWriteFile = await (dstFile as any).createWritable();
+        await dstWriteFile.write(await readFile(currentUnsortedPhoto.raw));
+        await dstWriteFile.close();
+        refreshSortedPhotos();
+      }
     }
-  }, {}, [selectedPhotoIndex, unsortedPhotos])  
+
+    if(handler.keys?.includes("delete")) {
+      if(currentUnsortedPhoto?.prefix && sortedJpegDirectory && currentSortedPhoto?.jpeg) {
+        console.log(`Deleting ${sortedJpegDirectory.name}/${currentUnsortedPhoto.prefix}.*`);
+        const entries = (await readDirectory(sortedJpegDirectory)).filter(f => f.name.toLowerCase().startsWith(currentUnsortedPhoto.prefix.toLowerCase()));
+        await Promise.all(entries.map(async (entry) => sortedJpegDirectory.removeEntry(entry.name)));
+        refreshSortedPhotos();
+      }
+      if(currentUnsortedPhoto?.raw && sortedRawDirectory && currentSortedPhoto?.raw) {
+        console.log(`Deleting ${sortedRawDirectory.name}/${currentUnsortedPhoto.prefix}.*`);
+        const entries = (await readDirectory(sortedRawDirectory)).filter(f => f.name.toLowerCase().startsWith(currentUnsortedPhoto.prefix.toLowerCase()));
+        await Promise.all(entries.map(async (entry) => sortedRawDirectory.removeEntry(entry.name)));
+        refreshSortedPhotos();
+      }
+    }
+
+  }, {}, [selectedPhotoIndex, unsortedPhotos, sortedPhotos])  
 
   return (
-    <div style={{ marginLeft: 10, marginTop: 20, marginBottom: 20}}>
-
-      <Typography variant="h4" style={{ marginTop: 10 }}>
-        QuickPic
-      </Typography>
-
-      <div style={{ marginTop: 10 }}>
-
-        <div style={{ display: 'inline-block', marginLeft: 10 }}>
-          <Button variant="contained" color={unsortedJpegDirectory ? "primary" : "secondary"} onClick={async () => {
-            const dirHandle = await (window as any).showDirectoryPicker();
-            setUnsortedJpegDirectory(dirHandle)
-          }}>{ unsortedJpegDirectory ? `All JPEGs: ${unsortedJpegDirectory.name}` : "Choose Unsorted JPEGs"}</Button>
-        </div>
-
-        <div style={{ display: 'inline-block', marginLeft: 10 }}>
-          <Button variant="contained" color={unsortedRawDirectory ? "primary" : "secondary"} onClick={async () => {
-            const dirHandle = await (window as any).showDirectoryPicker();
-            setUnsortedRawDirectory(dirHandle)
-          }}>{ unsortedRawDirectory ? `All RAWs: ${unsortedRawDirectory.name}` : "Choose Unsorted RAWs"}</Button>
-        </div>
-
-        <div style={{ display: 'inline-block', marginLeft: 10 }}>
-          <Button variant="contained" color={sortedJpegDirectory ? "primary" : "secondary"} onClick={async () => {
-            const dirHandle = await (window as any).showDirectoryPicker();
-            setSortedJpegDirectory(dirHandle)
-          }}>{ sortedJpegDirectory ? `Sorted JPEGs: ${sortedJpegDirectory.name}` : "Choose Sorted JPEGs"}</Button>
-        </div>
-
-        <div style={{ display: 'inline-block', marginLeft: 10 }}>
-          <Button variant="contained" color={sortedRawDirectory ? "primary" : "secondary"} onClick={async () => {
-            const dirHandle = await (window as any).showDirectoryPicker();
-            setSortedRawDirectory(dirHandle)
-          }}>{ sortedRawDirectory ? `Sorted RAWs: ${sortedRawDirectory.name}` : "Choose Sorted RAWs"}</Button>
-        </div>
-
-
-      </div>
-
-      <div>
-        Image:
-        <pre>
-          { JSON.stringify({
-            index: selectedPhotoIndex,
-            prefix: selectedPhotoPrefix
-          }, null, 2) }
-        </pre>
-        { selectedPhotoUrl && 
-          <img 
-            key={selectedPhotoUrl.prefix}
-            src={selectedPhotoUrl.dataUrl}
-            style={{ 
-              width: '100%'
-            }}
-          />        
+    <Lightbox
+      plugins={[Zoom, Captions, Thumbnails]}
+      open={true}
+      slides={windowedImages}
+      index={selectedPhotoIndex}
+      on={{
+        view: ({index}) => {
+          setSelectedPhotoIndex(index)
         }
-      </div>
+      }}
+      carousel={{
+        finite: true,
+        preload: 4
+      }}
+      zoom={{
+        maxZoomPixelRatio: 4
+      }}
+      toolbar={{
+        buttons: [
+          <Button 
+            variant="contained"
+            color={unsortedJpegDirectory ? "primary" : "secondary"}
+            style={{ height: 40 }}
+            onClick={async () => {
+              const dirHandle = await (window as any).showDirectoryPicker();
+              setUnsortedJpegDirectory(dirHandle)
+            }}
+          >JPG</Button>,
 
-      <div>
-        <pre>
-          { JSON.stringify(unsortedPhotos.map(u => ({
-            prefix: u.prefix,
-            jpeg: u.jpeg ? `${u.jpeg.relativePath}/${u.jpeg.name}` : '',
-            raw: u.raw ? `${u.raw.relativePath}/${u.raw.name}` : ''
-          })), null, 2) }
-        </pre>
+          <Button 
+            variant="contained"
+            color={unsortedRawDirectory ? "primary" : "secondary"}
+            style={{ height: 40, marginLeft: 10 }}
+            onClick={async () => {
+              const dirHandle = await (window as any).showDirectoryPicker();
+              setUnsortedRawDirectory(dirHandle)
+            }}
+          >RAW</Button>,
 
-        <pre>
-          { JSON.stringify(sortedPhotos.map(u => ({
-            prefix: u.prefix,
-            jpeg: u.jpeg ? `${u.jpeg.relativePath}/${u.jpeg.name}` : '',
-            raw: u.raw ? `${u.raw.relativePath}/${u.raw.name}` : ''
-          })), null, 2) }
-        </pre>
+          <span className="fa-solid fa-caret-right" style={{ 
+            color: "white",
+            lineHeight: "40px",
+            verticalAlign: "middle",
+            fontSize: "30px",
+            marginLeft: 5
+          }}></span>,
 
-      </div>
+          <Button 
+            variant="contained"
+            color={sortedJpegDirectory ? "primary" : "secondary"}
+            style={{ height: 40, marginLeft: 8 }}
+            onClick={async () => {
+              const dirHandle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
+              setSortedJpegDirectory(dirHandle)
+            }}
+          >JPG</Button>,
 
-    </div>
+          <Button 
+            variant="contained"
+            color={sortedRawDirectory ? "primary" : "secondary"}
+            style={{ height: 40, marginLeft: 10 }}
+            onClick={async () => {
+              const dirHandle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
+              setSortedRawDirectory(dirHandle)
+            }}
+          >RAW</Button>
+        ]
+      }}
+    />
   )
 })
 

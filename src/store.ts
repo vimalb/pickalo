@@ -1,7 +1,9 @@
 import { observable, action, computed } from 'mobx';
 import { promisedComputed } from 'computed-async-mobx';
-import { readDirectory, ExtendedFile, readFileAsDataUrl, wait } from './utils';
+import { readDirectory, ExtendedFile, readFileAsDataUrl, wait, readFile } from './utils';
 import { union, sortBy, difference, intersection } from 'lodash';
+import ExifReader from 'exifreader';
+
 
 interface JpegRawPhoto {
   prefix: string,
@@ -14,19 +16,28 @@ interface PhotoDataUrl {
   dataUrl: string
 }
 
-const JPEG_DATA_URL_PREFETCH_SIZE = 50;
-const JPEG_DATA_URL_PRERENDER_SIZE = 10;
+interface LightboxPhoto {
+  src: string,
+  title?: string,
+  description?: string
+}
+
+const PRELOAD_WINDOW = 10;
+
 
 export class Store {
 
   @observable.ref unsortedJpegDirectory: FileSystemDirectoryHandle | null = null;
   @action setUnsortedJpegDirectory = (newValue: FileSystemDirectoryHandle | null) => {
     this.unsortedJpegDirectory = newValue;
+    this._windowedUnsortedPhotosAsync = [];
+    this.setSelectedPhotoIndex(0);
   }
 
   @observable.ref unsortedRawDirectory: FileSystemDirectoryHandle | null = null;
   @action setUnsortedRawDirectory = (newValue: FileSystemDirectoryHandle | null) => {
     this.unsortedRawDirectory = newValue;
+    this._windowedUnsortedPhotosAsync = [];
   }
 
   @observable.ref sortedJpegDirectory: FileSystemDirectoryHandle | null = null;
@@ -41,7 +52,7 @@ export class Store {
 
 
 
-  unsortedPhotosAsync = promisedComputed([] as JpegRawPhoto[], async () => {
+  _unsortedPhotosAsync = promisedComputed([] as JpegRawPhoto[], async () => {
     const {
       unsortedJpegDirectory,
       unsortedRawDirectory
@@ -51,8 +62,11 @@ export class Store {
       unsortedRawDirectory
     );
   });
+  @computed get unsortedPhotos() {
+    return this._unsortedPhotosAsync.get()
+  }
 
-  sortedPhotosAsync = promisedComputed([] as JpegRawPhoto[], async () => {
+  _sortedPhotosAsync = promisedComputed([] as JpegRawPhoto[], async () => {
     const {
       sortedJpegDirectory,
       sortedRawDirectory
@@ -62,6 +76,16 @@ export class Store {
       sortedRawDirectory
     );
   });
+  @action refreshSortedPhotos = () => {
+    this._sortedPhotosAsync.refresh();
+  }
+  @computed get sortedPhotos() {
+    return Object.fromEntries(this._sortedPhotosAsync.get().map(e => [e.prefix, e]));
+  }
+
+
+
+
 
 
   @observable.ref _selectedPhotoIndex: number | null = null;
@@ -71,24 +95,61 @@ export class Store {
   @action setSelectedPhotoIndex = (newValue: number) => {
     this._selectedPhotoIndex = newValue;
   }
-  @computed get selectedPhotoPrefix() {
-    const { selectedPhotoIndex } = this;
-    const unsortedPhotos = this.unsortedPhotosAsync.get();
-    return unsortedPhotos[selectedPhotoIndex]?.prefix ?? "";
+
+  _windowedUnsortedPhotosAsync = [] as (Promise<LightboxPhoto> | null)[]
+  windowedImagesAsync = promisedComputed([] as LightboxPhoto[], async () => {
+    const {
+      unsortedPhotos,
+      selectedPhotoIndex,
+      sortedPhotos
+    } = this;
+
+    if(this._windowedUnsortedPhotosAsync.length !== unsortedPhotos.length) {
+      this._windowedUnsortedPhotosAsync = unsortedPhotos.map(up => null);
+    }
+    this._windowedUnsortedPhotosAsync = this._windowedUnsortedPhotosAsync.map((item,idx) => (
+      (idx < (selectedPhotoIndex - PRELOAD_WINDOW)) ? null :
+      (idx < (selectedPhotoIndex + PRELOAD_WINDOW) && item === null && unsortedPhotos[idx].jpeg) ? readFileAsDataUrl(unsortedPhotos[idx].jpeg!!).then(src => {
+        return {
+          src
+        } as LightboxPhoto
+      }) :
+      (idx < (selectedPhotoIndex + PRELOAD_WINDOW)) ? item : null
+    ));
+    
+    const windowedUnsortedPhotos = (await Promise.all(this._windowedUnsortedPhotosAsync.map(x => x || { src: "" } as LightboxPhoto))).map((up,idx) => {
+
+      const unsortedPhoto = unsortedPhotos[idx];
+
+      const srcFileName = (unsortedPhoto.jpeg && unsortedPhoto.raw) ? `${unsortedPhoto.jpeg?.name}+${unsortedPhoto.raw?.name.split('.').slice(-1)[0]}` :
+                          unsortedPhoto.jpeg ? unsortedPhoto.jpeg?.name :
+                          unsortedPhoto.raw ? unsortedPhoto.raw?.name :
+                          unsortedPhoto.prefix;
+
+      const sortedPhoto = sortedPhotos[unsortedPhoto.prefix];
+
+      const dstFileName = !sortedPhoto ? "" :
+                          (sortedPhoto.jpeg && sortedPhoto.raw) ? `\u2764\uFE0F JPG+${sortedPhoto.raw?.name.split('.').slice(-1)[0].toUpperCase()}` :
+                          sortedPhoto.jpeg ? `\u2764\uFE0F JPG` :
+                          sortedPhoto.raw ? `\u2764\uFE0F ${sortedPhoto.raw?.name.split('.').slice(-1)[0].toUpperCase()}` :
+                          sortedPhoto.prefix;
+            
+
+      return {
+        ...up,
+        title: `${srcFileName} ${dstFileName}`
+      }
+
+    });
+    
+    return windowedUnsortedPhotos;
+  });
+  @computed get windowedImages() {
+    return this.windowedImagesAsync.get();
   }
 
-  selectedPhotoUrlAsync = promisedComputed(null, async () => {
-    const { selectedPhotoIndex } = this;
-    const unsortedPhotos = this.unsortedPhotosAsync.get();
-    const unsortedPhoto = unsortedPhotos[selectedPhotoIndex] ?? null;
 
-    const result = unsortedPhoto?.jpeg ? {
-      prefix: unsortedPhoto.prefix,
-      dataUrl: await readFileAsDataUrl(unsortedPhoto.jpeg)
-    } as PhotoDataUrl : null;
 
-    return result;
-  })
 
 
 }
