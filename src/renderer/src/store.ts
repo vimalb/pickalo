@@ -105,7 +105,7 @@ export class Store {
     } = this;
 
     if(this._windowedUnsortedPhotosAsync.length !== unsortedPhotos.length) {
-      this._windowedUnsortedPhotosAsync = unsortedPhotos.map(up => null);
+      this._windowedUnsortedPhotosAsync = unsortedPhotos.map(() => null);
     }
     this._windowedUnsortedPhotosAsync = this._windowedUnsortedPhotosAsync.map((item,idx) => (
       (idx < (selectedPhotoIndex - PRELOAD_WINDOW)) ? null :
