@@ -1,8 +1,14 @@
 import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
+export interface PreloadApi {
+  isPreloadMethod: () => boolean;
+}
+
 // Custom APIs for renderer
-const api = {}
+const preloadApi: PreloadApi = {
+  isPreloadMethod: () => true
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -10,7 +16,7 @@ const api = {}
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('preloadApi', preloadApi)
   } catch (error) {
     console.error(error)
   }
