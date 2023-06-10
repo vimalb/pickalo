@@ -6,6 +6,7 @@ import url from 'url';
 import { union, sortBy, difference, intersection } from 'lodash';
 import sharp from 'sharp';
 import ExifReader from 'exifreader';
+import { requestInstallWindowsShellExtensions, requestUninstallWindowsShellExtensions } from './shellex';
 
 
 
@@ -164,6 +165,14 @@ class ApiServer {
     }
     const response = await responseCacheEntry.jpegMetaAsync;
     return response;
+  }
+
+  installShellExtension = async () => {
+    await requestInstallWindowsShellExtensions();    
+  }
+
+  uninstallShellExtension = async () => {
+    await requestUninstallWindowsShellExtensions();
   }
 
 }

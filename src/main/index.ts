@@ -3,15 +3,27 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { apiServer } from './server';
+import { processInstallWindowsShellExtensions, processUninstallWindowsShellExtensions } from './shellex';
+import { CLISwitches } from './cli';
 
-export enum CLISwitches {
-  UNSORTED_JPG = "unsorted_jpg",
-  UNSORTED_RAW = "unsorted_raw",
-  SORTED_JPG = "sorted_jpg",
-  SORTED_RAW = "sorted_raw"
+if(app.commandLine.hasSwitch(CLISwitches.INSTALL_WINDOWS_SHELL_EX)) {
+  processUninstallWindowsShellExtensions();
+  processInstallWindowsShellExtensions();
+  app.quit();
+  process.exit();
+}
+if(app.commandLine.hasSwitch(CLISwitches.UNINSTALL_WINDOWS_SHELL_EX)) {
+  processUninstallWindowsShellExtensions();
+  app.quit();
+  process.exit();
 }
 
-const cliArgs = Object.fromEntries(Object.values(CLISwitches).map(sw => [sw, app.commandLine.getSwitchValue(sw) || null]));
+const cliArgs = Object.fromEntries(Object.values(CLISwitches).map(sw => [
+  sw,
+  app.commandLine.hasSwitch(sw) ? app.commandLine.getSwitchValue(sw) : null
+]));
+
+
 const singleAppLock = app.requestSingleInstanceLock(cliArgs);
 
 if(!singleAppLock) {

@@ -32,5 +32,8 @@ export interface MainApi {
   deleteFromDirectory: (targetDir: string, filePrefix: string) => Promise<void>,
 
   precacheJpegMeta: (requests: JpegMetaRequest[]) => Promise<void>,
-  getJpegMeta: (request: JpegMetaRequest) => Promise<JpegMeta>
+  getJpegMeta: (request: JpegMetaRequest) => Promise<JpegMeta>,
+
+  installShellExtension: () => Promise<void>,
+  uninstallShellExtension: () => Promise<void>
 }

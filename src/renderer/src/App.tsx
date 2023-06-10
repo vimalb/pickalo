@@ -12,6 +12,7 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/plugins/captions.css";
 import { apiClient } from './client';
+import { AppMenu } from './AppMenu';
 
 
 import { 
@@ -238,7 +239,9 @@ const App = observer(() => {
                 fontSize: "25px"
               }}
             ></span>
-          </Button>
+          </Button>,
+
+          <AppMenu/>
         ]
       }}
     />
