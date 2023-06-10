@@ -1,13 +1,30 @@
-import { app, shell, BrowserWindow, ipcMain, protocol } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { apiServer } from './server';
-import url from 'url';
 
-function createWindow(): void {
+export enum CLISwitches {
+  UNSORTED_JPG = "unsorted_jpg",
+  UNSORTED_RAW = "unsorted_raw",
+  SORTED_JPG = "sorted_jpg",
+  SORTED_RAW = "sorted_raw"
+}
+
+const cliArgs = Object.fromEntries(Object.values(CLISwitches).map(sw => [sw, app.commandLine.getSwitchValue(sw) || null]));
+const singleAppLock = app.requestSingleInstanceLock(cliArgs);
+
+if(!singleAppLock) {
+  app.quit();
+  process.exit();
+}
+
+
+let mainWindow: BrowserWindow | null = null;
+
+const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 900,
     show: false,
@@ -18,16 +35,27 @@ function createWindow(): void {
       sandbox: false,
       webSecurity: false
     }
-  })
+  });
 
+  app.on('second-instance', (event, commandLine, workingDirectory, additionalData) => {
+    // Print out data received from the second instance.
+    console.log(`Second instance launched in ${workingDirectory} with ${additionalData}`)
+  
+    // Someone tried to run a second instance, we should focus our window.
+    if (mainWindow?.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow?.focus();
+  });
+  
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
-  })
+    mainWindow?.show()
+  });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
-  })
+  });
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
