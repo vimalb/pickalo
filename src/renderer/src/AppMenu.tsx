@@ -1,8 +1,13 @@
 import * as React from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { apiClient } from './client';
+import { PlatformInfo } from '../../common/api';
 
-export const AppMenu = () => {
+export interface MenuProps {
+  platformInfo: PlatformInfo
+}
+
+export const AppMenu = (props: MenuProps) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -40,14 +45,23 @@ export const AppMenu = () => {
         }}
         style={{zIndex: 10000}}
       >
-        <MenuItem onClick={async () => {
-          await apiClient.installShellExtension();          
-          handleClose();
-        }}>Install Shell Extension</MenuItem>
-        <MenuItem onClick={async () => {
-          await apiClient.uninstallShellExtension();          
-          handleClose();
-        }}>Uninstall Shell Extension</MenuItem>
+        <MenuItem>Platform: { props.platformInfo.platform }</MenuItem>
+        { props.platformInfo.platform === "win32" &&
+          <>
+            <MenuItem onClick={async () => {
+              handleClose();
+              await apiClient.installShellExtension();          
+            }}>Install Shell Extension</MenuItem>
+            <MenuItem onClick={async () => {
+              handleClose();
+              await apiClient.uninstallShellExtension();          
+            }}>Uninstall Shell Extension</MenuItem>
+            <MenuItem onClick={async () => {       
+              handleClose();
+              await apiClient.alert(JSON.stringify(props.platformInfo.argv ?? [], null, 2));
+            }}>View Arguments</MenuItem>
+          </>
+        }
       </Menu>
     </div>
   );

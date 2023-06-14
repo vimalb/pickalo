@@ -25,6 +25,11 @@ export interface JpegMeta {
   srcSet?: JpegSrcSet[]
 }
 
+export interface PlatformInfo {
+  platform?: string,
+  argv?: string[]
+}
+
 export interface MainApi {
   chooseDirectory: () => Promise<string>,
   recursiveListDirectory: (rootDir: string) => Promise<FileDetail[]>,
@@ -34,6 +39,10 @@ export interface MainApi {
   precacheJpegMeta: (requests: JpegMetaRequest[]) => Promise<void>,
   getJpegMeta: (request: JpegMetaRequest) => Promise<JpegMeta>,
 
+  platformInfo: () => Promise<PlatformInfo>,
+
   installShellExtension: () => Promise<void>,
-  uninstallShellExtension: () => Promise<void>
+  uninstallShellExtension: () => Promise<void>,
+
+  alert: (msg: string) => Promise<void>
 }

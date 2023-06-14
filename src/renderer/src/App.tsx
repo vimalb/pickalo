@@ -16,13 +16,10 @@ import { AppMenu } from './AppMenu';
 
 
 import { 
-  Paper,
   Button,
-  Typography
 } from '@material-ui/core'
-import { readFile } from './utils';
 
-
+console.log(`React version: ${React.version}`);
 const App = observer(() => {
 
   const store = useLocalStore(() => new Store());
@@ -47,7 +44,9 @@ const App = observer(() => {
     selectedPhotoIndex,
     setSelectedPhotoIndex,
 
-    photoSync
+    photoSync,
+
+    platformInfo
   } = store;
 
   const currentUnsortedPhoto = unsortedPhotos[selectedPhotoIndex];
@@ -241,7 +240,7 @@ const App = observer(() => {
             ></span>
           </Button>,
 
-          <AppMenu/>
+          <AppMenu {...{platformInfo}} />
         ]
       }}
     />

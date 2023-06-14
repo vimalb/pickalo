@@ -18,8 +18,6 @@
         "src/renderer/src/*"
       ]
     },
-    "experimentalDecorators": true,
-    "noUnusedLocals": false
-
+    "experimentalDecorators": true
   }
 }

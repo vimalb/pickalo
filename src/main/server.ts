@@ -3,10 +3,10 @@ import { dialog } from 'electron';
 import { readdir, cp, rm } from 'fs/promises';
 import path from 'path';
 import url from 'url';
-import { union, sortBy, difference, intersection } from 'lodash';
+import { difference } from 'lodash';
 import sharp from 'sharp';
-import ExifReader from 'exifreader';
 import { requestInstallWindowsShellExtensions, requestUninstallWindowsShellExtensions } from './shellex';
+
 
 
 
@@ -167,6 +167,11 @@ class ApiServer {
     return response;
   }
 
+  platformInfo = () => Promise.resolve({
+    platform: process.platform,
+    argv: process.argv
+  })
+
   installShellExtension = async () => {
     await requestInstallWindowsShellExtensions();    
   }
@@ -174,6 +179,12 @@ class ApiServer {
   uninstallShellExtension = async () => {
     await requestUninstallWindowsShellExtensions();
   }
+
+  alert = async (msg: string) => {
+    dialog.showMessageBox({
+      message: msg
+    });
+  } 
 
 }
 

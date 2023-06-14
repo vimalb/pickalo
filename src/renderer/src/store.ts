@@ -1,9 +1,8 @@
 import { observable, action, computed, reaction } from 'mobx';
 import { promisedComputed } from 'computed-async-mobx';
-import { wait } from './utils';
-import { union, sortBy, difference, intersection, range } from 'lodash';
+import { union, sortBy, difference, range } from 'lodash';
 import { apiClient } from './client';
-import { FileDetail, JpegMeta } from '../../common/api';
+import { FileDetail, JpegMeta, PlatformInfo } from '../../common/api';
 
 
 
@@ -190,6 +189,16 @@ export class Store {
     return { state, pending };
   }
 
+
+  _platformInfoAsync = promisedComputed({} as PlatformInfo, async () => {
+    return await apiClient.platformInfo();
+  });
+  @computed get platformInfo() {
+    return this._platformInfoAsync.get();
+  }
+  
+
+
   constructor() {
 
     reaction(() => ({ 
@@ -253,6 +262,10 @@ export class Store {
       }
     })
   }
+
+
+
+
 
 }
 
