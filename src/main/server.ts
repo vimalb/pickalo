@@ -1,5 +1,5 @@
-import { MainApi, FileDetail, JpegMetaRequest, JpegMeta, JpegSrcSet } from '../common/api';
-import { dialog } from 'electron';
+import { MainApi, FileDetail, JpegMetaRequest, JpegMeta, JpegSrcSet, RendererApi } from '../common/api';
+import { dialog, ipcMain, WebContents } from 'electron';
 import { readdir, cp, rm } from 'fs/promises';
 import path from 'path';
 import url from 'url';
@@ -184,9 +184,21 @@ class ApiServer {
     dialog.showMessageBox({
       message: msg
     });
-  } 
-
+  }
 }
 
 export const apiServer: MainApi = new ApiServer();
+
+export let rendererApiClient: RendererApi = new Proxy({} as any, {
+  get() {
+    return () => {}
+  },
+});
+export const initRendererApiClient = (contents: WebContents) => {
+  rendererApiClient = new Proxy({} as any, {
+    get({}, prop, {}) {
+      return (...args) => contents.send('invoke-renderer', prop as string, ...args)
+    }
+  });
+}
 

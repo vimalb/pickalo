@@ -30,6 +30,7 @@ export interface PlatformInfo {
   argv?: string[]
 }
 
+// Must always be functions which return a Promise
 export interface MainApi {
   chooseDirectory: () => Promise<string>,
   recursiveListDirectory: (rootDir: string) => Promise<FileDetail[]>,
@@ -45,4 +46,12 @@ export interface MainApi {
   uninstallShellExtension: () => Promise<void>,
 
   alert: (msg: string) => Promise<void>
+}
+
+// Must always be functions which return void
+export interface RendererApi {
+  setUnsortedJpegDirectory: (newValue: string | null) => void
+  setUnsortedRawDirectory: (newValue: string | null) => void
+  setSortedJpegDirectory: (newValue: string | null) => void
+  setSortedRawDirectory: (newValue: string | null) => void
 }

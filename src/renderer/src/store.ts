@@ -1,8 +1,8 @@
 import { observable, action, computed, reaction } from 'mobx';
 import { promisedComputed } from 'computed-async-mobx';
 import { union, sortBy, difference, range } from 'lodash';
-import { apiClient } from './client';
-import { FileDetail, JpegMeta, PlatformInfo } from '../../common/api';
+import { apiClient, initRendererServer } from './client';
+import { FileDetail, JpegMeta, PlatformInfo, RendererApi } from '../../common/api';
 
 
 
@@ -33,7 +33,7 @@ export enum SyncState {
   PENDING
 }
 
-export class Store {
+export class Store implements RendererApi {
 
   @observable.ref unsortedJpegDirectory: string | null = null;
   @action setUnsortedJpegDirectory = (newValue: string | null) => {
@@ -198,8 +198,9 @@ export class Store {
   }
   
 
-
   constructor() {
+
+    initRendererServer(this);
 
     reaction(() => ({ 
       selectedPhotoIndex: this.selectedPhotoIndex,

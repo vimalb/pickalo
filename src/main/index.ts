@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { apiServer } from './server';
+import { apiServer, initRendererApiClient, rendererApiClient } from './server';
 import { processInstallWindowsShellExtensions, processUninstallWindowsShellExtensions } from './shellex';
 import { CLISwitches } from './cli';
 
@@ -53,10 +53,26 @@ if(app.commandLine.hasSwitch(CLISwitches.INSTALL_WINDOWS_SHELL_EX)) {
         webSecurity: false
       }
     });
+
+    initRendererApiClient(mainWindow.webContents);
   
     app.on('second-instance', ({}, {}, workingDirectory, additionalData) => {
       // Print out data received from the second instance.
-      console.log(`Second instance launched in ${workingDirectory} with ${additionalData}`)
+      const secondSwitches: Record<CLISwitches,string|null> = additionalData as any;
+      console.log(`Second instance launched in ${workingDirectory} with ${JSON.stringify(secondSwitches)}`)
+      if(secondSwitches.unsorted_jpg) {
+        rendererApiClient.setUnsortedJpegDirectory(secondSwitches.unsorted_jpg);
+      }
+      if(secondSwitches.unsorted_raw) {
+        rendererApiClient.setUnsortedRawDirectory(secondSwitches.unsorted_raw);
+      }
+      if(secondSwitches.sorted_jpg) {
+        rendererApiClient.setSortedJpegDirectory(secondSwitches.sorted_jpg);
+      }
+      if(secondSwitches.sorted_raw) {
+        rendererApiClient.setSortedRawDirectory(secondSwitches.sorted_raw);
+      }
+
     
       // Someone tried to run a second instance, we should focus our window.
       if (mainWindow?.isMinimized()) {
