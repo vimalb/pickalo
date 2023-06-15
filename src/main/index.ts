@@ -6,8 +6,6 @@ import { apiServer, initRendererApiClient, rendererApiClient } from './server';
 import { processInstallWindowsShellExtensions, processUninstallWindowsShellExtensions } from './shellex';
 import { CLISwitches } from './cli';
 
-console.log(process.argv)
-
 if(app.commandLine.hasSwitch(CLISwitches.INSTALL_WINDOWS_SHELL_EX)) {
   (async () => {
     await processUninstallWindowsShellExtensions();
@@ -55,24 +53,27 @@ if(app.commandLine.hasSwitch(CLISwitches.INSTALL_WINDOWS_SHELL_EX)) {
     });
 
     initRendererApiClient(mainWindow.webContents);
+
+    const handleCLISwitches = (switches: Record<CLISwitches,string|null>) => {
+      if(switches.unsorted_jpg) {
+        rendererApiClient.setUnsortedJpegDirectory(switches.unsorted_jpg);
+      }
+      if(switches.unsorted_raw) {
+        rendererApiClient.setUnsortedRawDirectory(switches.unsorted_raw);
+      }
+      if(switches.sorted_jpg) {
+        rendererApiClient.setSortedJpegDirectory(switches.sorted_jpg);
+      }
+      if(switches.sorted_raw) {
+        rendererApiClient.setSortedRawDirectory(switches.sorted_raw);
+      }
+    }
   
     app.on('second-instance', ({}, {}, workingDirectory, additionalData) => {
       // Print out data received from the second instance.
       const secondSwitches: Record<CLISwitches,string|null> = additionalData as any;
-      console.log(`Second instance launched in ${workingDirectory} with ${JSON.stringify(secondSwitches)}`)
-      if(secondSwitches.unsorted_jpg) {
-        rendererApiClient.setUnsortedJpegDirectory(secondSwitches.unsorted_jpg);
-      }
-      if(secondSwitches.unsorted_raw) {
-        rendererApiClient.setUnsortedRawDirectory(secondSwitches.unsorted_raw);
-      }
-      if(secondSwitches.sorted_jpg) {
-        rendererApiClient.setSortedJpegDirectory(secondSwitches.sorted_jpg);
-      }
-      if(secondSwitches.sorted_raw) {
-        rendererApiClient.setSortedRawDirectory(secondSwitches.sorted_raw);
-      }
-
+      console.log(`Second instance launched in ${workingDirectory} with ${JSON.stringify(secondSwitches)}`);
+      handleCLISwitches(secondSwitches);
     
       // Someone tried to run a second instance, we should focus our window.
       if (mainWindow?.isMinimized()) {
@@ -83,6 +84,7 @@ if(app.commandLine.hasSwitch(CLISwitches.INSTALL_WINDOWS_SHELL_EX)) {
     
     mainWindow.on('ready-to-show', () => {
       mainWindow?.show()
+      handleCLISwitches(cliArgs as Record<CLISwitches,string|null>);
     });
   
     mainWindow.webContents.setWindowOpenHandler((details) => {

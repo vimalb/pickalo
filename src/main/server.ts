@@ -1,5 +1,5 @@
 import { MainApi, FileDetail, JpegMetaRequest, JpegMeta, JpegSrcSet, RendererApi } from '../common/api';
-import { dialog, ipcMain, WebContents } from 'electron';
+import { dialog, WebContents } from 'electron';
 import { readdir, cp, rm } from 'fs/promises';
 import path from 'path';
 import url from 'url';

@@ -47,20 +47,20 @@ export const AppMenu = (props: MenuProps) => {
       >
         <MenuItem>Platform: { props.platformInfo.platform }</MenuItem>
         { props.platformInfo.platform === "win32" &&
-          <>
+          [
             <MenuItem onClick={async () => {
               handleClose();
               await apiClient.installShellExtension();          
-            }}>Install Shell Extension</MenuItem>
+            }}>Install Shell Extension</MenuItem>,
             <MenuItem onClick={async () => {
               handleClose();
               await apiClient.uninstallShellExtension();          
-            }}>Uninstall Shell Extension</MenuItem>
+            }}>Uninstall Shell Extension</MenuItem>,
             <MenuItem onClick={async () => {       
               handleClose();
               await apiClient.alert(JSON.stringify(props.platformInfo.argv ?? [], null, 2));
             }}>View Arguments</MenuItem>
-          </>
+          ]
         }
       </Menu>
     </div>
