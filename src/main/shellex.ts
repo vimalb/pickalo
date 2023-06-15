@@ -1,9 +1,29 @@
 import { CLISwitches } from "./cli";
 import { elevate } from 'node-windows';
-import { execSync } from 'child_process';
+import { execSync, exec } from 'child_process';
+import { app } from 'electron';
+import { join } from 'path';
+import { existsSync } from 'fs';
 
 export const escapeShellArg = (s: string) => `"${s.replaceAll('"','""')}"`
 export const currentDir = process.cwd();
+
+console.log(`App path: ${app.getAppPath()}`);
+const devNodeElevate = join(app.getAppPath(), 'node_modules\\node-windows\\bin\\elevate\\elevate.cmd');
+const deployNodeElevate = devNodeElevate.replace("app.asar", "app.asar.unpacked");
+
+const localElevate = (cmd: string, callback: any) => {
+  if(existsSync(deployNodeElevate)) {
+    console.log(`Elevating ${cmd} using deployNodeElevate:${deployNodeElevate}`)
+    exec(`"${deployNodeElevate}" ${cmd}`, callback);
+  } else if(existsSync(devNodeElevate)) {
+    console.log(`Elevating ${cmd} using devNodeElevate:${devNodeElevate}`)
+    exec(`"${devNodeElevate}" ${cmd}`, callback);
+  } else {
+    console.log(`Elevating ${cmd} using node-windows.elevate`)
+    elevate(cmd, {}, callback);
+  }
+}
 
 const currentProcessWithoutSwitches = process.argv
   .filter(s => !s.startsWith("--"))
@@ -12,12 +32,17 @@ const currentProcessWithoutSwitchesString = currentProcessWithoutSwitches.map(s 
 
 
 export const requestInstallWindowsShellExtensions = async () => {
-  console.log("Requesting install shell extension")
+  const elevateCommand = `${currentProcessWithoutSwitchesString} --${CLISwitches.INSTALL_WINDOWS_SHELL_EX}`;
+  console.log(`Requesting install shell extension: ${elevateCommand}`)
   await new Promise(res => {
-    elevate(
-      `${currentProcessWithoutSwitchesString} --${CLISwitches.INSTALL_WINDOWS_SHELL_EX}`,
-      {},
-      () => res(null)
+    localElevate(
+      elevateCommand,
+      (err: any) => {
+        if(err) {
+          console.log(err)
+        };
+        res(null);
+      }
     )
   })
 }
@@ -60,10 +85,14 @@ export const processInstallWindowsShellExtensions = async () => {
 export const requestUninstallWindowsShellExtensions = async () => {
   console.log("Requesting uninstall shell extension");
   await new Promise(res => {
-    elevate(
+    localElevate(
       `${currentProcessWithoutSwitchesString} --${CLISwitches.UNINSTALL_WINDOWS_SHELL_EX}`,
-      {},
-      () => res(null)
+      (err: any) => {
+        if(err) {
+          console.log(err)
+        };
+        res(null);
+      }
     )
   })
 }
