@@ -9,10 +9,14 @@ export const escapeShellArg = (s: string) => `"${s.replaceAll('"','""')}"`
 export const currentDir = process.cwd();
 
 console.log(`App path: ${app.getAppPath()}`);
-const devNodeElevate = join(app.getAppPath(), 'node_modules\\node-windows\\bin\\elevate\\elevate.cmd');
-const deployNodeElevate = devNodeElevate.replace("app.asar", "app.asar.unpacked");
+const devAppRoot = app.getAppPath();
+const deployAppRoot = devAppRoot.replace("app.asar", "app.asar.unpacked")
+
 
 const localElevate = (cmd: string, callback: any) => {
+  const nodeElevateRelativePath = 'node_modules\\node-windows\\bin\\elevate\\elevate.cmd';
+  const deployNodeElevate = join(deployAppRoot, nodeElevateRelativePath);
+  const devNodeElevate = join(devAppRoot, nodeElevateRelativePath);
   if(existsSync(deployNodeElevate)) {
     console.log(`Elevating ${cmd} using deployNodeElevate:${deployNodeElevate}`)
     exec(`"${deployNodeElevate}" ${cmd}`, callback);
@@ -48,7 +52,7 @@ export const requestInstallWindowsShellExtensions = async () => {
 }
 
 const PARENT_PREFIX = `HKCU\\Software\\Classes\\directory\\shell`;
-const DIRECTORY_PREFIX = `${PARENT_PREFIX}\\QuickPicMenu`;
+const DIRECTORY_PREFIX = `${PARENT_PREFIX}\\PickaloMenu`;
 const SUBCOMMAND_PREFIX = `${DIRECTORY_PREFIX}\\Shell`
 
 const directorySwitches = [
@@ -72,7 +76,8 @@ const directorySwitches = [
 
 export const processInstallWindowsShellExtensions = async () => {
   console.log("Installing windows shell extension");
-  execSync(`reg add "${DIRECTORY_PREFIX}" /v "MUIVerb" /t REG_SZ /d "QuickPic Set As" /f`);
+  execSync(`reg add "${DIRECTORY_PREFIX}" /v "MUIVerb" /t REG_SZ /d "Open with Pickalo as" /f`);
+  execSync(`reg add "${DIRECTORY_PREFIX}" /v "Icon" /t REG_SZ /d "${process.argv[0]}" /f`);
   execSync(`reg add "${DIRECTORY_PREFIX}" /v "SubCommands" /t REG_SZ /d "" /f`);
   directorySwitches.forEach(ds => {
     execSync(`reg add "${SUBCOMMAND_PREFIX}\\${ds.cmdkey}" /ve /t REG_SZ /d ${escapeShellArg(ds.name)} /f`);

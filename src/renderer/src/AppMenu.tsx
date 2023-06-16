@@ -43,9 +43,8 @@ export const AppMenu = (props: MenuProps) => {
         MenuListProps={{
           'aria-labelledby': 'basic-button',
         }}
-        style={{zIndex: 10000}}
+        style={{zIndex: 150}}
       >
-        <MenuItem>Platform: { props.platformInfo.platform }</MenuItem>
         { props.platformInfo.platform === "win32" &&
           [
             <MenuItem onClick={async () => {
@@ -58,8 +57,17 @@ export const AppMenu = (props: MenuProps) => {
             }}>Uninstall Shell Extension</MenuItem>,
             <MenuItem onClick={async () => {       
               handleClose();
-              await apiClient.alert(JSON.stringify(props.platformInfo.argv ?? [], null, 2));
-            }}>View Arguments</MenuItem>
+              await apiClient.alert(`
+Left Arrow - backward 1 image
+Right Arrow - forward 1 image
+Page Up - backward 100 images
+Page Down - forward 100 images
+Space - include current image in sorted
+Delete - remove current image from sorted
+Up Arrow - skip to previous sorted image
+Down Arrow - skip to next sorted image
+              `);
+            }}>Keyboard Shortcuts</MenuItem>
           ]
         }
       </Menu>

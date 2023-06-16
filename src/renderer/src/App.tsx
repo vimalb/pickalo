@@ -17,6 +17,7 @@ import { AppMenu } from './AppMenu';
 
 import { 
   Button,
+  Tooltip
 } from '@material-ui/core'
 
 console.log(`React version: ${React.version}`);
@@ -117,6 +118,9 @@ const App = observer(() => {
   return (
     <Lightbox
       plugins={[Zoom, Captions, Thumbnails]}
+      styles={{ root: {
+        zIndex: 100
+      }}}
       open={true}
       slides={windowedImages}
       index={selectedPhotoIndex}
@@ -138,47 +142,54 @@ const App = observer(() => {
       toolbar={{
         buttons: [
 
-          <Button
-            variant="text"
-            onClick={() => {
-              refreshUnsortedPhotos();
-              refreshSortedPhotos();
-            }}
-            style={{ height: 40, marginLeft: 40 }}
-          >
-            <span
-              className="fa-solid fa-rotate"
-              style={{ 
-                color: "white",
-                verticalAlign: "middle",
-                fontSize: "30px"
+          <Tooltip title="Reload Image Folders">
+            <Button
+              variant="text"
+              onClick={() => {
+                refreshUnsortedPhotos();
+                refreshSortedPhotos();
               }}
-            ></span>
-          </Button>,
+              style={{ height: 40, marginLeft: 40 }}
+            >
+              <span
+                className="fa-solid fa-rotate"
+                style={{ 
+                  color: "white",
+                  verticalAlign: "middle",
+                  fontSize: "30px"
+                }}
+              ></span>
+            </Button>
+          </Tooltip>,
 
-          <Button 
-            variant="contained"
-            color={unsortedJpegDirectory ? "primary" : "secondary"}
-            style={{ height: 40, marginLeft: 0 }}
-            onClick={async () => {
-              const dirHandle = await apiClient.chooseDirectory();
-              if(dirHandle) {
-                setUnsortedJpegDirectory(dirHandle);
-              }
-            }}
-          >JPG</Button>,
+          <Tooltip title="Choose Unsorted JPEG Folder">
+            <Button 
+              variant="contained"
+              color={unsortedJpegDirectory ? "primary" : "secondary"}
+              style={{ height: 40, marginLeft: 0 }}
+              onClick={async () => {
+                const dirHandle = await apiClient.chooseDirectory();
+                if(dirHandle) {
+                  setUnsortedJpegDirectory(dirHandle);
+                }
+              }}
+            >JPG</Button>
+          </Tooltip>,
 
-          <Button 
-            variant="contained"
-            color={unsortedRawDirectory ? "primary" : "secondary"}
-            style={{ height: 40, marginLeft: 10 }}
-            onClick={async () => {
-              const dirHandle = await apiClient.chooseDirectory();
-              if(dirHandle) {
-                setUnsortedRawDirectory(dirHandle);
-              }
-            }}
-          >RAW</Button>,
+
+          <Tooltip title="Choose Unsorted RAW Folder">
+            <Button 
+              variant="contained"
+              color={unsortedRawDirectory ? "primary" : "secondary"}
+              style={{ height: 40, marginLeft: 10 }}
+              onClick={async () => {
+                const dirHandle = await apiClient.chooseDirectory();
+                if(dirHandle) {
+                  setUnsortedRawDirectory(dirHandle);
+                }
+              }}
+            >RAW</Button>
+          </Tooltip>,
 
           <span className="fa-solid fa-caret-right" style={{ 
             color: "white",
@@ -188,57 +199,63 @@ const App = observer(() => {
             marginLeft: 5
           }}></span>,
 
-          <Button 
-            variant="contained"
-            color={sortedJpegDirectory ? "primary" : "secondary"}
-            style={{ height: 40, marginLeft: 8 }}
-            onClick={async () => {
-              const dirHandle = await apiClient.chooseDirectory();
-              if(dirHandle) {
-                setSortedJpegDirectory(dirHandle);
-              }
-            }}
-          >JPG</Button>,
-
-          <Button 
-            variant="contained"
-            color={sortedRawDirectory ? "primary" : "secondary"}
-            style={{ height: 40, marginLeft: 10 }}
-            onClick={async () => {
-              const dirHandle = await apiClient.chooseDirectory();
-              if(dirHandle) {
-                setSortedRawDirectory(dirHandle);
-              }
-            }}
-          >RAW</Button>,
-
-          <Button
-            variant="text"
-            onClick={async () => {
-              await Promise.all(photoSync.pending.map(async ({unsorted, sorted}) => {
-                if(unsorted.jpeg && sortedJpegDirectory && !sorted.jpeg) {
-                  await apiClient.copyToDirectory(unsorted.jpeg.path, sortedJpegDirectory)
+          <Tooltip title="Choose Sorted JPEG Folder">
+            <Button 
+              variant="contained"
+              color={sortedJpegDirectory ? "primary" : "secondary"}
+              style={{ height: 40, marginLeft: 8 }}
+              onClick={async () => {
+                const dirHandle = await apiClient.chooseDirectory();
+                if(dirHandle) {
+                  setSortedJpegDirectory(dirHandle);
                 }
-                if(unsorted.raw && sortedRawDirectory && !sorted.raw) {
-                  await apiClient.copyToDirectory(unsorted.raw.path, sortedRawDirectory)
-                }
-              }));
-              refreshSortedPhotos();
-            }}
-            style={{ height: 40, marginLeft: 0 }}
-            disabled={photoSync.state === SyncState.UNAVAILABLE}
-          >
-            <span
-              className="fa-solid fa-right-left"
-              style={{ 
-                color: photoSync.state === SyncState.UNAVAILABLE ? "grey" :
-                       photoSync.state === SyncState.PENDING ? "yellow" : 
-                       "green",
-                verticalAlign: "middle",
-                fontSize: "25px"
               }}
-            ></span>
-          </Button>,
+            >JPG</Button>
+          </Tooltip>,
+
+          <Tooltip title="Choose Sorted Raw Folder">
+            <Button 
+              variant="contained"
+              color={sortedRawDirectory ? "primary" : "secondary"}
+              style={{ height: 40, marginLeft: 10 }}
+              onClick={async () => {
+                const dirHandle = await apiClient.chooseDirectory();
+                if(dirHandle) {
+                  setSortedRawDirectory(dirHandle);
+                }
+              }}
+            >RAW</Button>
+          </Tooltip>,
+
+          <Tooltip title="Synchronize Unsorted JPEG and RAW Folders">
+            <Button
+              variant="text"
+              onClick={async () => {
+                await Promise.all(photoSync.pending.map(async ({unsorted, sorted}) => {
+                  if(unsorted.jpeg && sortedJpegDirectory && !sorted.jpeg) {
+                    await apiClient.copyToDirectory(unsorted.jpeg.path, sortedJpegDirectory)
+                  }
+                  if(unsorted.raw && sortedRawDirectory && !sorted.raw) {
+                    await apiClient.copyToDirectory(unsorted.raw.path, sortedRawDirectory)
+                  }
+                }));
+                refreshSortedPhotos();
+              }}
+              style={{ height: 40, marginLeft: 0 }}
+              disabled={photoSync.state === SyncState.UNAVAILABLE}
+            >
+              <span
+                className="fa-solid fa-right-left"
+                style={{ 
+                  color: photoSync.state === SyncState.UNAVAILABLE ? "grey" :
+                        photoSync.state === SyncState.PENDING ? "yellow" : 
+                        "green",
+                  verticalAlign: "middle",
+                  fontSize: "25px"
+                }}
+              ></span>
+            </Button>
+          </Tooltip>,
 
           <AppMenu {...{platformInfo}} />
         ]
