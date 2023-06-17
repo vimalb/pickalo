@@ -8,6 +8,15 @@ Pickalo is a basic desktop photo browsing and organizing application for Windows
 
 Download the latest release [here](https://github.com/vimalb/pickalo/releases). 
 
+Note that Chrome will likely block the download as "Untrusted" - you will have to explicitly opt into keeping the downloaded file.
+Likewise Windows will likely block running the download because it is "Untrusted" - you will have to explicitly allow running the application.
+
+Both are for the same reason - this is brand new application with very few users, so it is not trusted by default.
+C'est la vie.
+
+If this makes you uncomfortable, consider downloading and reviewing the source code and building the application for yourself. 
+
+
 ## Usage Guide
 
 #### Browse JPEG Photos
