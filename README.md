@@ -46,11 +46,11 @@ Additional keyboard shortcuts available when sorting photos:
 Pickalo is particularly useful for quickly browsing and sorting through folders containing matched pairs of JPEG and RAW photos. This use case requires selecting four directories:
   * "Unsorted JPG" directory should contain all of your original JPEG images.
   * "Unsorted RAW" directory should contain all of your original RAW images
-    * This can be the same as the "Unsorted JPG" directory if your camera saves JPEG and RAW images together, or it can be a different folder if your camera saves JPEG and RAW images to different cards
-    * Files in the "Unsorted RAW" directory should have the same name as files in the "Unsorted JPG" directory and differ only in extension
+      * This can be the same as the "Unsorted JPG" directory if your camera saves JPEG and RAW images together, or it can be a different folder if your camera saves JPEG and RAW images to different cards
+      * Files in the "Unsorted RAW" directory should have the same name as files in the "Unsorted JPG" directory and differ only in extension
   * "Sorted JPG" directory may be empty or contain existing JPEG images
   * "Sorted RAW" directory may be empty or contain existing RAW images
-    * This can be the same as the "Sorted JPG" directory if you wish to keep your JPEG and RAW images in the same folder, or it can be a different folder if you would like them to be separate
+      * This can be the same as the "Sorted JPG" directory if you wish to keep your JPEG and RAW images in the same folder, or it can be a different folder if you would like them to be separate
 
 While you using Pickalo to browse the "Unsorted JPG" directory, you can quickly choose images to copy to (or remove from) the "Sorted" directories.
 
@@ -61,8 +61,8 @@ Step by step guide:
   3. Click on the right "JPG" button to choose your "Sorted JPG" directory
   4. Click on the right "RAW" button to choose your "Sorted RAW" directory
   5. As you are browsing through images in the "Unsorted JPG" directory, press "Space" to copy the current image into the "Sorted" directories.
-    a. The JPEG version of the current image will be copied from the "Unsorted JPG" directory to the "Sorted JPG" directory
-    b. If a RAW version of the current image is present in the "Unsorted RAW" directory, it will also be copied to the "Sorted RAW" directory
+      * The JPEG version of the current image will be copied from the "Unsorted JPG" directory to the "Sorted JPG" directory
+      * If a RAW version of the current image is present in the "Unsorted RAW" directory, it will also be copied to the "Sorted RAW" directory
   6. If the current image is already in the "Sorted JPG" directory, a ❤️ will appear next to the filename in the top bar. 
   7. To remove the current file from the "Sorted JPG" and "Sorted RAW" directory, press "Delete"
 
