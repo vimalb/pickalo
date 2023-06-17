@@ -2,6 +2,8 @@
 
 Pickalo is a basic desktop photo browsing and organizing application for Windows. 
 
+![](https://raw.githubusercontent.com/vimalb/pickalo/main/screenshots/main.jpg)
+
 ## Installation
 
 Download the latest release [here](https://github.com/vimalb/pickalo/releases). 
@@ -73,6 +75,17 @@ Additional keyboard shortcuts available when sorting photos:
   * Down Arrow - Skip to next image in the "Sorted JPG" directory
 
 If you have JPEG files in the "Sorted JPG" directory but do not have corresponding RAW files in the "Sorted RAW" directory or vice versa, press the ⇄ button to copy missing files from the respective "Unsorted" directories. 
+
+#### Shell Extension
+
+Pickalo can install a shell extension to quickly allow opening folders in Pickalo from Windows explorer.
+
+![](https://raw.githubusercontent.com/vimalb/pickalo/main/screenshots/shell-extension.jpg)
+
+To install the shell extension, press the ≡ button to open the menu, select "Install Shell Extension", and then accept the UAC prompt to make changes.
+
+To uninstall the shell extension, press the ≡ button to open the menu, select "Uninstall Shell Extension", and then accept the UAC prompt to make changes. Note that uninstalling the application will NOT automatically uninstall the shell extension - remember to uninstall the shell extension before uninstalling the application.
+
 
 
 
