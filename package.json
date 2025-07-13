@@ -32,7 +32,7 @@
     "react-dom": "^16.14.0",
     "react-dropzone": "^14.2.3",
     "react-hotkeys-hook": "^4.4.0",
-    "sharp": "^0.32.1",
+    "sharp": "^0.34.3",
     "yet-another-react-lightbox": "^3.10.0"
   },
   "devDependencies": {

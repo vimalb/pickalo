@@ -278,14 +278,37 @@ const makeJpegRawPhotos = async (
 ) => {
   const jpegHandles = jpegDirectory ? (await apiClient.recursiveListDirectory(jpegDirectory)) : [];
   const allJpegHandlesMap: Record<string,FileDetail[]> = {};
-  jpegHandles.forEach((jh) => {
-    const nameParts = jh.name.split(".");
-    if(nameParts.length >= 2) {
-      const prefix = nameParts.slice(0,-1).join(".").toLowerCase();
+
+  const splitFilename = (filename: string) => {
+    const nameParts = filename.split(".");
+    if(nameParts.length >= 2) { 
+      const prefix = nameParts
+        .slice(0,-1)
+        .join(".")
+        .toLowerCase()
+        .replace(".raw-01.cover", "")
+        .replace(".raw-01.mp.cover", "")
+        .replace(".raw-02.original", "")
+        .replace(".raw-02.mp.original", "");
       const extension = nameParts.slice(-1)[0].toLowerCase();
+      return {
+        prefix,
+        extension
+      }
+    }
+    return {
+      prefix: null,
+      extension: null
+    }
+  }
+
+  jpegHandles.forEach((jh) => {
+    const { prefix, extension } = splitFilename(jh.name);
+    if(prefix && extension) {
       if([
         "jpg",
-        "jpeg"
+        "jpeg",
+        "heic"
       ].includes(extension)) {
         if(!allJpegHandlesMap[prefix]) {
           allJpegHandlesMap[prefix] = [];
@@ -298,10 +321,8 @@ const makeJpegRawPhotos = async (
   const rawHandles = rawDirectory ? (await apiClient.recursiveListDirectory(rawDirectory)) : [];
   const allRawHandlesMap: Record<string,FileDetail[]> = {};
   rawHandles.forEach((jh) => {
-    const nameParts = jh.name.split(".");
-    if(nameParts.length >= 2) {
-      const prefix = nameParts.slice(0,-1).join(".").toLowerCase();
-      const extension = nameParts.slice(-1)[0].toLowerCase();
+    const { prefix, extension } = splitFilename(jh.name);
+    if(prefix && extension) {
       if([
         "arw",
         "srf",

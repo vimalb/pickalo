@@ -162,7 +162,7 @@ const App = observer(() => {
             </Button>
           </Tooltip>,
 
-          <Tooltip title="Choose Unsorted JPEG Folder">
+          <Tooltip title={ unsortedJpegDirectory ?? "Choose Unsorted JPEG Folder" }>
             <Button 
               variant="contained"
               color={unsortedJpegDirectory ? "primary" : "secondary"}
@@ -177,7 +177,7 @@ const App = observer(() => {
           </Tooltip>,
 
 
-          <Tooltip title="Choose Unsorted RAW Folder">
+          <Tooltip title={ unsortedRawDirectory ?? "Choose Unsorted RAW Folder" }>
             <Button 
               variant="contained"
               color={unsortedRawDirectory ? "primary" : "secondary"}
@@ -199,7 +199,7 @@ const App = observer(() => {
             marginLeft: 5
           }}></span>,
 
-          <Tooltip title="Choose Sorted JPEG Folder">
+          <Tooltip title={ sortedJpegDirectory ?? "Choose Sorted JPEG Folder" }>
             <Button 
               variant="contained"
               color={sortedJpegDirectory ? "primary" : "secondary"}
@@ -213,7 +213,7 @@ const App = observer(() => {
             >JPG</Button>
           </Tooltip>,
 
-          <Tooltip title="Choose Sorted Raw Folder">
+          <Tooltip title={ sortedRawDirectory ?? "Choose Sorted Raw Folder" }>
             <Button 
               variant="contained"
               color={sortedRawDirectory ? "primary" : "secondary"}

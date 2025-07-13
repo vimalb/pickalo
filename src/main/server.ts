@@ -73,9 +73,10 @@ setTimeout(async () => {
 
 const extractJpegMeta = async (request: JpegMetaRequest) => {
   const start = new Date().getTime();
-  let srcSet: JpegSrcSet[] = [];
+  const srcSet: JpegSrcSet[] = [];
   let dimensions: { width: number, height: number } = { width: 0, height: 0 };
   const fullSizeFileUrl = url.pathToFileURL(request.path).toString();
+
 
   try {
 
@@ -85,10 +86,10 @@ const extractJpegMeta = async (request: JpegMetaRequest) => {
       height: metadata.height ?? 0
     }
 
-    srcSet = [
-      { src: fullSizeFileUrl, ...dimensions }
-    ]
-
+    if(metadata.format === 'jpeg') {
+      srcSet.push(
+        { src: fullSizeFileUrl, ...dimensions }
+      );
       const halfSize = await sharp(request.path)
         .resize({height: 1080})
         .jpeg({ quality: 50 })
@@ -100,7 +101,8 @@ const extractJpegMeta = async (request: JpegMetaRequest) => {
           width: halfSize.info.width,
           height: halfSize.info.height
         }
-      )    
+      )
+    }
 
   } catch (err) {
     console.error(`Error resizing ${request.path}`, err);
