@@ -307,8 +307,7 @@ const makeJpegRawPhotos = async (
     if(prefix && extension) {
       if([
         "jpg",
-        "jpeg",
-        "heic"
+        "jpeg"
       ].includes(extension)) {
         if(!allJpegHandlesMap[prefix]) {
           allJpegHandlesMap[prefix] = [];
