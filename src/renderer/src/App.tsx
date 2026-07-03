@@ -257,7 +257,7 @@ const App = observer(() => {
             </Button>
           </Tooltip>,
 
-          <AppMenu {...{platformInfo}} />
+          <AppMenu {...{platformInfo, store}} />
         ]
       }}
     />

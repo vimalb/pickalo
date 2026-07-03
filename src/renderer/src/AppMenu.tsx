@@ -1,13 +1,16 @@
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
+import { Store, JpegRawPhoto } from './store';
 import { Button, Menu, MenuItem } from '@material-ui/core';
 import { apiClient } from './client';
 import { PlatformInfo } from '../../common/api';
 
 export interface MenuProps {
   platformInfo: PlatformInfo
+  store: Store
 }
 
-export const AppMenu = (props: MenuProps) => {
+export const AppMenu = observer((props: MenuProps) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -16,6 +19,11 @@ export const AppMenu = (props: MenuProps) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const {
+    sortedRawDirectory,
+    sortedPhotos
+  } = props.store;
 
   return (
     <div>
@@ -55,6 +63,19 @@ export const AppMenu = (props: MenuProps) => {
               handleClose();
               await apiClient.uninstallShellExtension();          
             }}>Uninstall Shell Extension</MenuItem>,
+            <MenuItem onClick={async () => {
+              handleClose();
+              const backfilledPhotos: JpegRawPhoto[] = [];
+              await Promise.all(Object.entries(sortedPhotos).map(async ([,sorted]) => {
+                if(sorted.jpeg && sortedRawDirectory && !sorted.raw) {
+                  backfilledPhotos.push(sorted);
+                  await apiClient.copyToDirectory(sorted.jpeg.path, sortedRawDirectory)
+                }
+              }));
+              alert(
+                backfilledPhotos.length > 0 ? `Synced ${backfilledPhotos.length} jpeg in place of raw` : `No missing raws`
+              );
+            }}>Sync JPEG as missing RAW</MenuItem>,
             <MenuItem onClick={async () => {       
               handleClose();
               await apiClient.alert(`
@@ -73,6 +94,6 @@ Down Arrow - skip to next sorted image
       </Menu>
     </div>
   );
-}
+});
 
 export default AppMenu;

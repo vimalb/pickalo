@@ -6,7 +6,7 @@ import { FileDetail, JpegMeta, PlatformInfo, RendererApi } from '../../common/ap
 
 
 
-interface JpegRawPhoto {
+export interface JpegRawPhoto {
   prefix: string,
   jpeg: FileDetail | null | undefined,
   raw: FileDetail | null | undefined

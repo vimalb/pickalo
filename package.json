@@ -1,6 +1,6 @@
 {
   "name": "pickalo",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -58,5 +58,12 @@
     "prettier": "^2.8.7",
     "typescript": "^4.9.5",
     "vite": "^4.2.1"
+  },
+  "allowScripts": {
+    "@fortawesome/fontawesome-free@6.4.0": true,
+    "electron@22.3.13": true,
+    "esbuild@0.17.19": true,
+    "exifreader@4.12.1": true,
+    "sharp@0.34.3": true
   }
 }
