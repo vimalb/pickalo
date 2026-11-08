@@ -282,14 +282,7 @@ const makeJpegRawPhotos = async (
   const splitFilename = (filename: string) => {
     const nameParts = filename.split(".");
     if(nameParts.length >= 2) { 
-      const prefix = nameParts
-        .slice(0,-1)
-        .join(".")
-        .toLowerCase()
-        .replace(".raw-01.cover", "")
-        .replace(".raw-01.mp.cover", "")
-        .replace(".raw-02.original", "")
-        .replace(".raw-02.mp.original", "");
+      const prefix = nameParts[0];
       const extension = nameParts.slice(-1)[0].toLowerCase();
       return {
         prefix,
